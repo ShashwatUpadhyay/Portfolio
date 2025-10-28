@@ -4,7 +4,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from pydantic import BaseModel,Field
 from typing import Literal
-from django.conf import settings
+from portfolio.settings import GOOGLE_API_KEY
 
 
 def generate_quiz(video_id):
@@ -17,7 +17,7 @@ def generate_quiz(video_id):
             temperature=0.2,
             max_tokens=None,  # use default or set a limit
             timeout=None,
-            api_key=settings.GOOGLE_API_KEY,
+            api_key=GOOGLE_API_KEY,
         )
         
         class QuestionOptionOutput(BaseModel):
@@ -76,9 +76,11 @@ def generate_quiz(video_id):
                 option=chain_result['D'],
                 is_correct=(chain_result['correct_option'] == 'D')
             )
+            print(f'Question created: {question.question}')
+        video.is_ready = True
+        video.save()
+        return True
     except Exception as e:
         print(e)
         return False
-    video.is_ready = True
-    video.save()
-    return True
+  
