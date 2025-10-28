@@ -63,7 +63,7 @@ class QuizAPIView(APIView):
                 print(e)
                 return Response({
                 'status' : False,
-                'message': 'Video not found',
+                'message': f'Video not found : {e}',
                 'data': {
                     'video_id' : video_id,
                     'created' : False,
@@ -84,8 +84,6 @@ class QuizAPIView(APIView):
                     chunk_text = chunk.page_content
                 ))
 
-            
-            
             return Response({
                 'status' : True,
                 'message': 'Video Created',
