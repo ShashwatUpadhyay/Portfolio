@@ -79,8 +79,7 @@ def generate_quiz(video_id):
             print(f'Question created: {question.question}')
         video.is_ready = True
         video.save()
-        return True
+        return 'video must be created'
     except Exception as e:
-        print(e)
-        return False
+        return e
   

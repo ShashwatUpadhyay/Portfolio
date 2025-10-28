@@ -30,13 +30,13 @@ class QuizAPIView(APIView):
                 },
             })
         else:
-            quiz_generated = generate_quiz(video_id)
-            if quiz_generated:
+            quiz_generate_message = generate_quiz(video_id)
+            if video.is_ready:
                 questions = Question.objects.filter(youtube_video=video)
                 serializer = QuestionSerializer(questions, many=True)
                 return Response({
                     'status' : True,
-                    'message': 'Quiz Generated',
+                    'message': f'Quiz Generated : {quiz_generate_message}',
                     'data': {
                         'video_id' : video_id,
                         'questions' : serializer.data
