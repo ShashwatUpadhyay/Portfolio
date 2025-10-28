@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Quiz</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'custom-red': '#ff6348',
+                        'custom-orange': '#ffa500'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-red-400 to-orange-400 min-h-screen p-5">
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div class="bg-gradient-to-r from-red-500 to-red-400 text-white p-8 text-center">
+            <h1 class="text-4xl font-bold mb-2">🎥 YouTube Quiz Generator</h1>
+            <p class="text-red-100">Generate interactive quizzes from YouTube videos</p>
+        </div>
+        
+        <div class="p-10">
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Enter YouTube Video URL</h2>
+                <input type="url" class="w-full p-4 border-2 border-gray-300 rounded-lg text-base focus:outline-none focus:border-red-400 transition-colors" id="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
+                <button class="bg-gradient-to-r from-red-400 to-red-500 text-white px-8 py-4 rounded-lg text-base font-medium mt-4 hover:-translate-y-1 transition-transform" onclick="generateQuiz()">Generate Quiz</button>
+            </div>
+
+            <div class="text-center py-10 text-gray-600 hidden" id="loading">
+                <div class="w-10 h-10 border-4 border-gray-200 border-t-red-400 rounded-full spinner mx-auto mb-5"></div>
+                <p>Generating quiz from video content...</p>
+            </div>
+
+            <div class="hidden mt-10 pt-8 border-t-2 border-gray-200" id="quizSection">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">Quiz Questions</h2>
+                <div id="questionsContainer">
+                    <!-- Questions will be dynamically generated here -->
+                </div>
+                <button class="bg-gradient-to-r from-green-500 to-green-600 text-white px-10 py-4 rounded-lg text-base font-medium mt-6 hover:-translate-y-1 transition-transform" onclick="submitQuiz()">Submit Quiz</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestions = [];
+        const csrftoken = document.querySelector('[name=csrf-token]').content;
+
+        function getYouTubeVideoId(url) {
+            try {
+                const parsedUrl = new URL(url);
+                // Case 1: Regular YouTube link (e.g. https://www.youtube.com/watch?v=wvTff9IjC3Q)
+                if (parsedUrl.hostname.includes("youtube.com")) {
+                return parsedUrl.searchParams.get("v");
+                }
+                // Case 2: Shortened link (e.g. https://youtu.be/wvTff9IjC3Q)
+                else if (parsedUrl.hostname.includes("youtu.be")) {
+                return parsedUrl.pathname.slice(1);
+                }
+                return null; // Not a YouTube URL
+            } catch (err) {
+                console.error("Invalid URL:", err.message);
+                return null;
+            }
+        }
+
+
+        function generateQuiz() {
+            const video_id = getYouTubeVideoId(document.getElementById('videoUrl').value);
+            console.log(video_id)
+            if (!video_id) {
+                alert('Please enter a YouTube URL');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('quizSection').classList.add('hidden');
+
+            // Simulate API call delay
+            setTimeout(() => {
+                document.getElementById('loading').classList.add('hidden');
+                createSampleQuiz(video_id);
+                document.getElementById('quizSection').classList.remove('hidden');
+            }, 2000);
+        }
+        function createSampleQuiz(video_id) {
+            // Sample quiz data - replace with actual API response
+            
+            fetch('/api/quiz_view/', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'X-CSRFToken': csrftoken,
+                },
+                body: JSON.stringify({
+                    video_id: video_id
+                })
+            }) .then(response => response.json()).then(data => {
+                console.log("✅ Response:", data);
+                console.log(data.data.created)
+                if (data.data.created){
+                    fetch(`/api/quiz_view/?video_id=${video_id}`, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }).then(response => response.json()).then(data => {
+                        currentQuestions = data.data.questions;
+                        renderQuestions();
+                    })
+                }
+                else{
+                    console.log("Some this went Wrong!")
+                }
+            })
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            console.log(currentQuestions)
+            currentQuestions.forEach((q, index) => {
+                const questionCard = document.createElement('div');
+                questionCard.className = 'bg-gray-50 rounded-xl p-6 mb-5 border-l-4 border-red-400';
+                
+                questionCard.innerHTML = `
+                    <div class="text-xl font-semibold text-gray-800 mb-5">
+                        Question ${index + 1}: ${q.question}
+                    </div>
+                    <div class="space-y-3">
+                        ${q.options.map((option, optIndex) => `
+                            <div class="flex items-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-red-400 hover:bg-red-50 transition-all">
+                                <input type="radio" id="q${q.id}_opt${optIndex}" name="question${q.id}" value="${optIndex}" class="mr-3 scale-125 accent-red-400">
+                                <label for="q${q.id}_opt${optIndex}" class="cursor-pointer text-base text-gray-700">${option}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                container.appendChild(questionCard);
+            });
+        }
+
+        function submitQuiz() {
+            const answers = {};
+            let allAnswered = true;
+
+            currentQuestions.forEach(q => {
+                const selected = document.querySelector(`input[name="question${q.id}"]:checked`);
+                if (selected) {
+                    answers[q.id] = parseInt(selected.value);
+                } else {
+                    allAnswered = false;
+                }
+            });
+
+            if (!allAnswered) {
+                alert('Please answer all questions before submitting.');
+                return;
+            }
+
+            // Process answers
+            alert(`Quiz submitted! Answers: ${JSON.stringify(answers)}`);
+        }
+    </script>
+</body>
+</html>

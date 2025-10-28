@@ -22,6 +22,8 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('lmao/', admin.site.urls),
     path('', include('base.urls')),
+    path('api/', include('api.urls')),
+    path('ytquiz/', include('ytquiz.urls')),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
