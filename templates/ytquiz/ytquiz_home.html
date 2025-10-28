@@ -146,8 +146,8 @@
                     <div class="space-y-3">
                         ${q.options.map((option, optIndex) => `
                             <div class="flex items-center p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-red-400 hover:bg-red-50 transition-all">
-                                <input type="radio" id="q${q.id}_opt${optIndex}" name="question${q.id}" value="${optIndex}" class="mr-3 scale-125 accent-red-400">
-                                <label for="q${q.id}_opt${optIndex}" class="cursor-pointer text-base text-gray-700">${option}</label>
+                                <input type="radio" id="q${q.uid}_opt${optIndex}" name="question${q.uid}" value="${optIndex}" class="mr-3 scale-125 accent-red-400">
+                                <label for="q${q.uid}_opt${optIndex}" class="cursor-pointer text-base text-gray-700">${option.option}</label>
                             </div>
                         `).join('')}
                     </div>

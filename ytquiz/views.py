@@ -5,6 +5,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from .models import YoutubeVideo, Question, Option, TranscriptChunk
 from langchain_text_splitters  import RecursiveCharacterTextSplitter
 from .generate_quiz import generate_quiz
+from .serializer import QuestionSerializer
 
 ytt_api = YouTubeTranscriptApi()
 
@@ -19,34 +20,26 @@ class QuizAPIView(APIView):
         video = YoutubeVideo.objects.get(video_id=video_id)
         if video.is_ready:
             questions = Question.objects.filter(youtube_video=video)
+            serializer = QuestionSerializer(questions, many=True)
             return Response({
                 'status' : True,
                 'message': 'Quiz Fetched',
                 'data': {
                     'video_id' : video_id,
-                    'questions' : [
-                        {
-                            'question' : question.question,
-                            'options' : [option.option for option in question.options.all()]
-                        } for question in questions
-                    ]
+                    'questions' : serializer.data
                 },
             })
         else:
             quiz_generated = generate_quiz(video_id)
             if quiz_generated:
                 questions = Question.objects.filter(youtube_video=video)
+                serializer = QuestionSerializer(questions, many=True)
                 return Response({
                     'status' : True,
                     'message': 'Quiz Generated',
                     'data': {
                         'video_id' : video_id,
-                        'questions' : [
-                            {
-                                'question' : question.question,
-                                'options' : [option.option for option in question.options.all()]
-                            } for question in questions
-                        ]
+                        'questions' : serializer.data
                     },
                 })
             else:
