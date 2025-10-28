@@ -6,8 +6,14 @@ from .models import YoutubeVideo, Question, Option, TranscriptChunk
 from langchain_text_splitters  import RecursiveCharacterTextSplitter
 from .generate_quiz import generate_quiz
 from .serializer import QuestionSerializer
+from youtube_transcript_api.proxies import WebshareProxyConfig
 
-ytt_api = YouTubeTranscriptApi()
+ytt_api = YouTubeTranscriptApi(
+    proxy_config=WebshareProxyConfig(
+        proxy_username="pudrrzxm",
+        proxy_password="i8gezlstxwm9",
+    )
+)
 
 # Create your views here.
 def index(request):
