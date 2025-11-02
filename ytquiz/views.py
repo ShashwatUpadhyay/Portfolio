@@ -8,12 +8,7 @@ from .generate_quiz import generate_quiz
 from .serializer import QuestionSerializer
 from youtube_transcript_api.proxies import WebshareProxyConfig
 
-ytt_api = YouTubeTranscriptApi(
-    proxy_config=WebshareProxyConfig(
-        proxy_username="pudrrzxm",
-        proxy_password="i8gezlstxwm9",
-    )
-)
+ytt_api = YouTubeTranscriptApi()
 
 # Create your views here.
 def index(request):
